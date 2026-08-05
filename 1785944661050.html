@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator BMI - Gradasi Biru Hijau</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            blue: '#0284C7',
+                            green: '#10B981',
+                            dark: '#0F172A'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Latar Belakang Dominan Gradasi Biru-Hijau */
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0284c7 0%, #0d9488 50%, #059669 100%);
+            background-attachment: fixed;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .dark body {
+            background: linear-gradient(135deg, #0f172a 0%, #064e3b 100%);
+            background-attachment: fixed;
+        }
+
+        /* Siluet Pencahayaan di Kiri Atas */
+        .light-spot-top-left {
+            position: fixed;
+            top: -100px;
+            left: -100px;
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.45) 0%, rgba(56, 189, 248, 0.25) 45%, transparent 70%);
+            filter: blur(50px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Menghilangkan Spin Button pada Input Number */
+        input[type='number']::-webkit-outer-spin-button,
+        input[type='number']::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+
+        #bmiValue,
+        #bmiCategory {
+            min-height: 3rem;
+        }
+
+        @media (max-width: 640px) {
+            .rounded-\[28px\] {
+                border-radius: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body class="text-slate-800 dark:text-slate-100 antialiased flex flex-col min-h-screen justify-between relative">
+
+    <!-- Siluet Pencahayaan Kiri Atas -->
+    <div class="light-spot-top-left"></div>
+
+    <!-- Header / Navbar -->
+    <header class="relative z-10 w-full max-w-4xl mx-auto px-4 pt-6 flex justify-between items-center">
+        <div class="flex items-center space-x-3 bg-white/20 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/30 text-white shadow-sm">
+            <span class="text-2xl">⚡</span>
+            <h1 class="font-bold text-lg tracking-wide">BMI Tracker</h1>
+        </div>
+
+        <!-- Theme Toggle Switcher -->
+        <button id="themeToggle" class="bg-white/20 hover:bg-white/30 backdrop-blur-md text-white font-medium px-4 py-2 rounded-2xl border border-white/30 transition-all flex items-center space-x-2 shadow-sm cursor-pointer">
+            <span id="themeIcon">🌙</span>
+            <span id="themeLabel" class="text-xs sm:text-sm font-semibold">Dark Mode</span>
+        </button>
+    </header>
+
+    <!-- Main Section Card Container -->
+    <main class="relative z-10 max-w-4xl w-full mx-auto px-4 py-8 flex-grow flex flex-col items-center space-y-8">
+        
+        <!-- Top Card: Form Input & Hasil -->
+        <div class="w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[28px] p-6 sm:p-10 shadow-2xl border border-white/40 dark:border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            
+            <!-- Left Side: Form Input -->
+            <div class="md:col-span-7 space-y-6">
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Kalkulator BMI</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Hitung Indeks Massa Tubuh Anda secara akurat.</p>
+                </div>
+
+                <form id="bmiForm" class="space-y-5" novalidate>
+                    <!-- Gender Selection with Cute 3D Avatars -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-2">Jenis Kelamin</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Male Radio Card -->
+                            <label class="relative flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer transition-all bg-white dark:bg-slate-800 hover:border-emerald-500 has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-400 shadow-sm">
+                                <input type="radio" name="gender" value="male" class="sr-only" checked>
+                                <!-- Cute 3D Boy Avatar (SVG) -->
+                                <svg class="w-14 h-14 mb-1 drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="50" cy="50" r="45" fill="#38BDF8"/>
+                                    <!-- Hair -->
+                                    <path d="M25 45C25 25 35 15 50 15C65 15 75 25 75 45C75 45 65 30 50 30C35 30 25 45 25 45Z" fill="#1E293B"/>
+                                    <!-- Face -->
+                                    <circle cx="50" cy="52" r="28" fill="#FFD1B3"/>
+                                    <!-- Eyes -->
+                                    <circle cx="41" cy="48" r="4.5" fill="#0F172A"/>
+                                    <circle cx="59" cy="48" r="4.5" fill="#0F172A"/>
+                                    <circle cx="42.5" cy="46.5" r="1.5" fill="white"/>
+                                    <circle cx="60.5" cy="46.5" r="1.5" fill="white"/>
+                                    <!-- Cheeks -->
+                                    <circle cx="36" cy="54" r="3.5" fill="#FF8A8A" opacity="0.6"/>
+                                    <circle cx="64" cy="54" r="3.5" fill="#FF8A8A" opacity="0.6"/>
+                                    <!-- Smile -->
+                                    <path d="M44 58Q50 64 56 58" stroke="#0F172A" stroke-width="3" stroke-linecap="round"/>
+                                </svg>
+                                <span class="font-bold text-sm text-slate-700 dark:text-slate-200">Laki-laki</span>
+                            </label>
+
+                            <!-- Female Radio Card -->
+                            <label class="relative flex flex-col items-center justify-center p-3 sm:p-4 border-2 border-slate-200 dark:border-slate-700 rounded-2xl cursor-pointer transition-all bg-white dark:bg-slate-800 hover:border-emerald-500 has-[:checked]:border-teal-500 has-[:checked]:ring-2 has-[:checked]:ring-teal-400 shadow-sm">
+                                <input type="radio" name="gender" value="female" class="sr-only">
+                                <!-- Cute 3D Girl Avatar (SVG) -->
+                                <svg class="w-14 h-14 mb-1 drop-shadow-md" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="50" cy="50" r="45" fill="#F472B6"/>
+                                    <!-- Hair Back -->
+                                    <path d="M20 50C20 30 30 18 50 18C70 18 80 30 80 50C80 68 72 75 72 75H28C28 75 20 68 20 50Z" fill="#475569"/>
+                                    <!-- Face -->
+                                    <circle cx="50" cy="52" r="26" fill="#FFE0CC"/>
+                                    <!-- Bangs Hair -->
+                                    <path d="M26 42C32 30 42 32 50 36C58 32 68 30 74 42C70 30 60 22 50 22C40 22 30 30 26 42Z" fill="#334155"/>
+                                    <!-- Eyes -->
+                                    <circle cx="41" cy="50" r="4" fill="#0F172A"/>
+                                    <circle cx="59" cy="50" r="4" fill="#0F172A"/>
+                                    <circle cx="42.5" cy="48.5" r="1.5" fill="white"/>
+                                    <circle cx="60.5" cy="48.5" r="1.5" fill="white"/>
+                                    <!-- Cheeks -->
+                                    <circle cx="35" cy="55" r="4" fill="#FF76A0" opacity="0.6"/>
+                                    <circle cx="65" cy="55" r="4" fill="#FF76A0" opacity="0.6"/>
+                                    <!-- Smile -->
+                                    <path d="M45 60Q50 64 55 60" stroke="#0F172A" stroke-width="2.5" stroke-linecap="round"/>
+                                    <!-- Bow Ribbon -->
+                                    <path d="M62 25C62 25 68 20 74 25C74 25 72 31 66 30L62 25Z" fill="#EF4444"/>
+                                    <path d="M62 25C62 25 58 18 54 22C54 22 58 28 62 29L62 25Z" fill="#EF4444"/>
+                                    <circle cx="62" cy="26" r="2.5" fill="#B91C1C"/>
+                                </svg>
+                                <span class="font-bold text-sm text-slate-700 dark:text-slate-200">Perempuan</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Input Grid: Usia, Tinggi, Berat -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div>
+                            <label for="ageInput" class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Usia (Thn)</label>
+                            <input type="number" id="ageInput" placeholder="25" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="heightInput" class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Tinggi (cm)</label>
+                            <input type="number" id="heightInput" placeholder="170" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm" required>
+                        </div>
+                        <div>
+                            <label for="weightInput" class="block text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider mb-1">Berat (kg)</label>
+                            <input type="number" id="weightInput" placeholder="65" class="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-semibold text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500 transition shadow-sm" required>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Tetap Putih -->
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-white hover:bg-slate-100 text-slate-900 font-extrabold py-4 px-6 rounded-2xl shadow-lg border border-slate-200 hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all duration-200 flex items-center justify-center space-x-2 cursor-pointer">
+                            <span class="text-xl">🧮</span>
+                            <span>Hitung BMI</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Side: Result Box -->
+            <div class="md:col-span-5 bg-gradient-to-br from-slate-50 to-teal-50/30 dark:from-slate-800 dark:to-slate-800/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-700/50 flex flex-col justify-between h-full space-y-6">
+                <div>
+                    <span class="text-xs font-extrabold text-teal-600 dark:text-teal-400 uppercase tracking-wider">Hasil Anda</span>
+                    <div class="mt-2 flex items-baseline space-x-2">
+                        <div id="bmiValue" class="text-5xl font-black text-slate-900 dark:text-white flex items-center">0.0</div>
+                        <span class="text-slate-400 font-semibold text-sm">BMI</span>
+                    </div>
+
+                    <div class="mt-3">
+                        <div id="bmiCategory" class="inline-block px-4 py-1.5 rounded-full text-xs font-bold bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                            Belum Ada Data
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar Indicator -->
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+                        <span>Indikator BMI</span>
+                        <span id="bmiRangeLabel">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-700 h-3 rounded-full overflow-hidden p-0.5">
+                        <div id="bmiProgress" class="h-full rounded-full transition-all duration-500" style="width: 0%; background: #CBD5E1;"></div>
+                    </div>
+                </div>
+
+                <!-- Recommendation Box -->
+                <div class="bg-white dark:bg-slate-900/60 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-1 shadow-sm">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                        💡 Rekomendasi Kesehatan
+                    </span>
+                    <p id="recommendationText" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Masukkan data Anda di sebelah kiri untuk melihat rekomendasi kesehatan.
+                    </p>
+                </div>
+
+                <!-- Updated Note Disclaimer -->
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center italic border-t border-slate-200/60 dark:border-slate-700/60 pt-3">
+                    Hasil ini sebagai referensi umum gizi harian. Mohon konsultasi lebih lanjut bila periksa nanti yaa👍
+                </p>
+            </div>
+
+        </div>
+
+        <!-- Bottom Card: Ringkasan Sehat Kategori BMI -->
+        <div class="w-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl rounded-[28px] p-6 sm:p-8 shadow-2xl border border-white/40 dark:border-slate-800 space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-1">
+                <div class="text-2xl mb-1">💚</div>
+                <h3 class="text-xl font-extrabold text-slate-900 dark:text-white">Ringkasan Sehat buat kamu tahu berat badan mu</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-300">Lebih dari sekadar angka, BMI membantu jadi panduan gaya hidup sehat.</p>
+            </div>
+
+            <!-- Grid Tabel Terpisah Tiap Kategori -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                
+                <!-- Underweight Table -->
+                <div class="overflow-hidden rounded-2xl border border-sky-200 dark:border-sky-900 bg-sky-50/40 dark:bg-sky-950/20">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-sky-500 text-white font-bold">
+                            <tr>
+                                <th class="px-4 py-2.5">Kategori</th>
+                                <th class="px-4 py-2.5">Rentang BMI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-sky-100 dark:border-sky-900/40">
+                                <td class="px-4 py-2 font-bold text-sky-700 dark:text-sky-300">Underweight</td>
+                                <td class="px-4 py-2 font-semibold text-slate-700 dark:text-slate-200">&lt; 18.5</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/50 dark:bg-slate-900/30">
+                                    Ayoo tingkatkan asupan nutrisi dengan porsi seimbang dan perhatikan aktivitas fisik dan olahraga juga.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Normal Table -->
+                <div class="overflow-hidden rounded-2xl border border-emerald-200 dark:border-emerald-900 bg-emerald-50/40 dark:bg-emerald-950/20">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-emerald-500 text-white font-bold">
+                            <tr>
+                                <th class="px-4 py-2.5">Kategori</th>
+                                <th class="px-4 py-2.5">Rentang BMI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-emerald-100 dark:border-emerald-900/40">
+                                <td class="px-4 py-2 font-bold text-emerald-700 dark:text-emerald-300">Normal</td>
+                                <td class="px-4 py-2 font-semibold text-slate-700 dark:text-slate-200">18.5 – 24.9</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/50 dark:bg-slate-900/30">
+                                    Baguss, Pertahankan oke, pola makan sehat dan jaga olahraga rutin. semangat 🔥
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Overweight Table -->
+                <div class="overflow-hidden rounded-2xl border border-amber-200 dark:border-amber-900 bg-amber-50/40 dark:bg-amber-950/20">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-amber-500 text-white font-bold">
+                            <tr>
+                                <th class="px-4 py-2.5">Kategori</th>
+                                <th class="px-4 py-2.5">Rentang BMI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-amber-100 dark:border-amber-900/40">
+                                <td class="px-4 py-2 font-bold text-amber-700 dark:text-amber-300">Overweight</td>
+                                <td class="px-4 py-2 font-semibold text-slate-700 dark:text-slate-200">25.0 – 29.9</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/50 dark:bg-slate-900/30">
+                                    Perbaiki pola makan dan tingkatkan aktivitas fisik untuk menstabilkan berat badan.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Obese Table -->
+                <div class="overflow-hidden rounded-2xl border border-rose-200 dark:border-rose-900 bg-rose-50/40 dark:bg-rose-950/20">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-rose-500 text-white font-bold">
+                            <tr>
+                                <th class="px-4 py-2.5">Kategori</th>
+                                <th class="px-4 py-2.5">Rentang BMI</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-rose-100 dark:border-rose-900/40">
+                                <td class="px-4 py-2 font-bold text-rose-700 dark:text-rose-300">Obese</td>
+                                <td class="px-4 py-2 font-semibold text-slate-700 dark:text-slate-200">≥ 30.0</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" class="px-4 py-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-white/50 dark:bg-slate-900/30">
+                                    Diskusikan dengan tenaga medis dan ahli gizi dan fokus pada perubahan gaya hidup
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 w-full text-center py-4 text-xs text-white/80 font-medium">
+        &copy; 2026 BMI Tracker System. All rights reserved.
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        let bmiForm;
+        let heightInput;
+        let weightInput;
+        let ageInput;
+        let bmiValueOutput;
+        let bmiCategoryOutput;
+        let bmiProgress;
+        let recommendationText;
+        let themeToggle;
+        let themeIcon;
+        let themeLabel;
+
+        function validateInput(value, min, max) {
+            const number = parseFloat(value);
+            return !Number.isNaN(number) && number >= min && number <= max;
+        }
+
+        function calculateBmi(weight, heightCm) {
+            const heightM = heightCm / 100;
+            return weight / (heightM * heightM);
+        }
+
+        function getBmiCategory(bmi) {
+            if (bmi < 18.5) {
+                return { label: 'Underweight', gradient: 'linear-gradient(90deg, #60a5fa, #38bdf8)', percent: 18 };
+            }
+            if (bmi < 25) {
+                return { label: 'Normal', gradient: 'linear-gradient(90deg, #22c55e, #14b8a6)', percent: 55 };
+            }
+            if (bmi < 30) {
+                return { label: 'Overweight', gradient: 'linear-gradient(90deg, #f97316, #f59e0b)', percent: 75 };
+            }
+            return { label: 'Obese', gradient: 'linear-gradient(90deg, #ef4444, #ec4899)', percent: 95 };
+        }
+
+        function getHealthRecommendation(category) {
+            const recommendations = {
+                Underweight: 'Ayoo tingkatkan asupan nutrisi dengan porsi seimbang dan perhatikan aktivitas fisik dan olahraga juga.',
+                Normal: 'Baguss, Pertahankan oke, pola makan sehat dan jaga olahraga rutin. semangat 🔥',
+                Overweight: 'Perbaiki pola makan dan tingkatkan aktivitas fisik untuk menstabilkan berat badan.',
+                Obese: 'Diskusikan dengan tenaga medis dan ahli gizi dan fokus pada perubahan gaya hidup'
+            };
+            return recommendations[category] || 'Masukkan data yang valid untuk mendapatkan rekomendasi.';
+        }
+
+        function updateBmiDisplay(bmi, categoryInfo) {
+            bmiValueOutput.textContent = bmi.toFixed(1);
+            bmiCategoryOutput.textContent = categoryInfo.label;
+            bmiProgress.style.width = `${categoryInfo.percent}%`;
+            bmiProgress.style.background = categoryInfo.gradient;
+            document.getElementById('bmiRangeLabel').textContent = `${categoryInfo.percent}%`;
+        }
+
+        function showValidationError(message) {
+            alert(message);
+        }
+
+        function applyTheme(isDark) {
+            const root = document.documentElement;
+            root.classList.toggle('dark', isDark);
+            themeIcon.textContent = isDark ? '☀️' : '🌙';
+            themeLabel.textContent = isDark ? 'Light Mode' : 'Dark Mode';
+            localStorage.setItem('bmiTheme', isDark ? 'dark' : 'light');
+        }
+
+        function initializeTheme() {
+            const storedTheme = localStorage.getItem('bmiTheme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const useDark = storedTheme ? storedTheme === 'dark' : prefersDark;
+            applyTheme(useDark);
+        }
+
+        function initializeElements() {
+            bmiForm = document.getElementById('bmiForm');
+            heightInput = document.getElementById('heightInput');
+            weightInput = document.getElementById('weightInput');
+            ageInput = document.getElementById('ageInput');
+            bmiValueOutput = document.getElementById('bmiValue');
+            bmiCategoryOutput = document.getElementById('bmiCategory');
+            bmiProgress = document.getElementById('bmiProgress');
+            recommendationText = document.getElementById('recommendationText');
+            themeToggle = document.getElementById('themeToggle');
+            themeIcon = document.getElementById('themeIcon');
+            themeLabel = document.getElementById('themeLabel');
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const height = heightInput.value.trim();
+            const weight = weightInput.value.trim();
+            const age = ageInput.value.trim();
+
+            if (!validateInput(height, 100, 250)) {
+                showValidationError('Tinggi badan harus antara 100 dan 250 cm.');
+                heightInput.focus();
+                return;
+            }
+
+            if (!validateInput(weight, 30, 250)) {
+                showValidationError('Berat badan harus antara 30 dan 250 kg.');
+                weightInput.focus();
+                return;
+            }
+
+            if (!validateInput(age, 10, 120)) {
+                showValidationError('Usia harus antara 10 dan 120 tahun.');
+                ageInput.focus();
+                return;
+            }
+
+            const bmiValue = calculateBmi(parseFloat(weight), parseFloat(height));
+            const categoryInfo = getBmiCategory(bmiValue);
+
+            updateBmiDisplay(bmiValue, categoryInfo);
+            const recommendation = getHealthRecommendation(categoryInfo.label);
+            recommendationText.textContent = recommendation;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeElements();
+            initializeTheme();
+
+            themeToggle.addEventListener('click', () => {
+                const isDark = !document.documentElement.classList.contains('dark');
+                applyTheme(isDark);
+            });
+
+            bmiForm.addEventListener('submit', handleFormSubmit);
+        });
+    </script>
+</body>
+</html>
